@@ -9,5 +9,4 @@ public class HarvezApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HarvezApplication.class, args);
 	}
-
 }
