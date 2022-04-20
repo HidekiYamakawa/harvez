@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -37,6 +39,7 @@ public class EmployeeController {
 	private final EmployeeRepository employeeRepository;
 
 	@GetMapping
+	@Cacheable(value = "employeeList")
 	Page<EmployeeNamesDTO> list(@RequestParam(required = false) String pieceOfName, 
 			@PageableDefault(page = 0, size = 10) Pageable pagination) {
 
@@ -62,6 +65,7 @@ public class EmployeeController {
 
 	@PostMapping
 	@Transactional
+	@CacheEvict(value = "employeeList", allEntries = true)
 	ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
 		Employee employee = newEmployee.converterToEntity();
 		employeeRepository.save(employee);
@@ -72,6 +76,7 @@ public class EmployeeController {
 
 	@PutMapping("/{id}")
 	@Transactional
+	@CacheEvict(value = "employeeList", allEntries = true)
 	ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
 		Optional<Employee> employeeData = employeeRepository.findById(id);
 		if (employeeData.isPresent()) {
@@ -84,6 +89,7 @@ public class EmployeeController {
 
 	@DeleteMapping("/{id}")
 	@Transactional
+	@CacheEvict(value = "employeeList", allEntries = true)
 	ResponseEntity<?> delete(@PathVariable Long id) {
 		Optional<Employee> employee = employeeRepository.findById(id);
 		if (employee.isPresent()) {
