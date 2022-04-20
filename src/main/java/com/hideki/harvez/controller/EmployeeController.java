@@ -1,13 +1,14 @@
 package com.hideki.harvez.controller;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,64 +34,64 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class EmployeeController {
 
-    private final EmployeeRepository employeeRepository;
+	private final EmployeeRepository employeeRepository;
 
-    @GetMapping
-    List<EmployeeNamesDTO> list(String pieceOfName) {
-    	System.out.println("pieceOfName: " + pieceOfName);
-    	List<Employee> employees = new ArrayList<Employee>();
-    	if (pieceOfName == null) {    		
-    		employees = employeeRepository.findAll();    		
-    		return EmployeeNamesDTO.converterToDTO(employees);
-    	} else {
-    		employees = employeeRepository.findByNameContainingOrderByName(pieceOfName);
-    		return EmployeeNamesDTO.converterToDTO(employees);
-    	}
-    	
-    }
+	@GetMapping
+	Page<EmployeeNamesDTO> list(@RequestParam(required = false) String pieceOfName, 
+			@PageableDefault(page = 0, size = 10) Pageable pagination) {
 
-    @GetMapping("/{id}")
-    ResponseEntity<EmployeeDetailsDTO> detail(@PathVariable Long id) {
-    	Optional<Employee> employeeData = employeeRepository.findById(id);
-    	if (employeeData.isPresent()) {
-    		return ResponseEntity.ok(new EmployeeDetailsDTO(employeeData.get()));    		
-    	}
-    	
-    	return ResponseEntity.notFound().build();
-    }
+		Page<Employee> employees;
+		if (pieceOfName == null) {
+			employees = employeeRepository.findAll(pagination);
+		} else {
+			employees = employeeRepository.findByNameContainingOrderByName(pieceOfName, pagination);
+		}
 
-    @PostMapping
-    @Transactional
-    ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
-    	Employee employee = newEmployee.converterToEntity();
-        employeeRepository.save(employee);
-        
-        URI uri = uriBuilder.path("/api/employees/{id}").buildAndExpand(employee.getId()).toUri();
-        return ResponseEntity.created(uri).body(new EmployeeDTO(employee));
-    }
+		return EmployeeNamesDTO.converterToDTO(employees);
+	}
 
-    @PutMapping("/{id}")
-    @Transactional
-    ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
-    	Optional<Employee> employeeData = employeeRepository.findById(id);
-    	if(employeeData.isPresent()) {
-    		Employee employee = employeeDto.update(id, employeeRepository);
-    		return ResponseEntity.ok(new EmployeeDTO(employee));    		
-    	}
-    	
-    	return ResponseEntity.notFound().build();
-    }
+	@GetMapping("/{id}")
+	ResponseEntity<EmployeeDetailsDTO> detail(@PathVariable Long id) {
+		Optional<Employee> employeeData = employeeRepository.findById(id);
+		if (employeeData.isPresent()) {
+			return ResponseEntity.ok(new EmployeeDetailsDTO(employeeData.get()));
+		}
 
-    @DeleteMapping("/{id}")
-    @Transactional
-    ResponseEntity<?> delete(@PathVariable Long id) {
-    	Optional<Employee> employee = employeeRepository.findById(id);
-    	if (employee.isPresent()) {
-    		employeeRepository.deleteById(id);
-    		return ResponseEntity.ok().build();
-    	}
-    	
-        return ResponseEntity.notFound().build();
-    }
+		return ResponseEntity.notFound().build();
+	}
+
+	@PostMapping
+	@Transactional
+	ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
+		Employee employee = newEmployee.converterToEntity();
+		employeeRepository.save(employee);
+
+		URI uri = uriBuilder.path("/api/employees/{id}").buildAndExpand(employee.getId()).toUri();
+		return ResponseEntity.created(uri).body(new EmployeeDTO(employee));
+	}
+
+	@PutMapping("/{id}")
+	@Transactional
+	ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
+		Optional<Employee> employeeData = employeeRepository.findById(id);
+		if (employeeData.isPresent()) {
+			Employee employee = employeeDto.update(id, employeeRepository);
+			return ResponseEntity.ok(new EmployeeDTO(employee));
+		}
+
+		return ResponseEntity.notFound().build();
+	}
+
+	@DeleteMapping("/{id}")
+	@Transactional
+	ResponseEntity<?> delete(@PathVariable Long id) {
+		Optional<Employee> employee = employeeRepository.findById(id);
+		if (employee.isPresent()) {
+			employeeRepository.deleteById(id);
+			return ResponseEntity.ok().build();
+		}
+
+		return ResponseEntity.notFound().build();
+	}
 
 }

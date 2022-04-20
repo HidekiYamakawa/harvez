@@ -1,7 +1,7 @@
 package com.hideki.harvez.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +12,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Employee findFirstByName(String name);
 
-    List<Employee> findByNameContainingOrderByName(String name);
+    Page<Employee> findByNameContainingOrderByName(String name, Pageable pagination);
 }

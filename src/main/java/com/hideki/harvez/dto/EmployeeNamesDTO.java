@@ -1,7 +1,6 @@
 package com.hideki.harvez.dto;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
 
 import com.hideki.harvez.model.Employee;
 
@@ -18,8 +17,8 @@ public class EmployeeNamesDTO {
 		this.name = employee.getName();
 	}
 
-	public static List<EmployeeNamesDTO> converterToDTO(List<Employee> employees) {
-		return employees.stream().map(EmployeeNamesDTO::new).collect(Collectors.toList());
+	public static Page<EmployeeNamesDTO> converterToDTO(Page<Employee> employees) {
+		return employees.map(EmployeeNamesDTO::new);
 	}
 	
 }
