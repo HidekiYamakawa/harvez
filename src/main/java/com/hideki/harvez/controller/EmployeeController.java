@@ -1,10 +1,14 @@
 package com.hideki.harvez.controller;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import com.hideki.harvez.model.Employee;
-import com.hideki.harvez.repository.EmployeeRepository;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,8 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.hideki.harvez.dto.EmployeeDTO;
+import com.hideki.harvez.dto.EmployeeDetailsDTO;
+import com.hideki.harvez.dto.EmployeeNamesDTO;
+import com.hideki.harvez.model.Employee;
+import com.hideki.harvez.repository.EmployeeRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -25,49 +35,61 @@ public class EmployeeController {
     private final EmployeeRepository employeeRepository;
 
     @GetMapping
-    List<Employee> list() {
-        return employeeRepository.findAll();
+    List<EmployeeNamesDTO> list(String pieceOfName) {
+    	System.out.println("pieceOfName: " + pieceOfName);
+    	List<Employee> employees = new ArrayList<Employee>();
+    	if (pieceOfName == null) {    		
+    		employees = employeeRepository.findAll();    		
+    		return EmployeeNamesDTO.converterToDTO(employees);
+    	} else {
+    		employees = employeeRepository.findByNameContainingOrderByName(pieceOfName);
+    		return EmployeeNamesDTO.converterToDTO(employees);
+    	}
+    	
     }
 
     @GetMapping("/{id}")
-    Employee findEmployeeById(@PathVariable Long id) {
-
-        return employeeRepository.findById(id).orElse(null);
-        // .orElseThrow(() -> new EmployeeNotFoundException(id));
-    }
-
-    @GetMapping("/name")
-    Employee findEmployeeByExactName(@RequestParam String fullName) {
-        return employeeRepository.findFirstByName(fullName);
-    }
-
-    @GetMapping("/name/contains")
-    List<Employee> findEmployeeByNameContaining(@RequestParam String pieceOfName) {
-        return employeeRepository.findByNameContainingOrderByName(pieceOfName);
+    ResponseEntity<EmployeeDetailsDTO> detail(@PathVariable Long id) {
+    	Optional<Employee> employeeData = employeeRepository.findById(id);
+    	if (employeeData.isPresent()) {
+    		return ResponseEntity.ok(new EmployeeDetailsDTO(employeeData.get()));    		
+    	}
+    	
+    	return ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    Employee newEmployee(@RequestBody Employee newEmployee) {
-        return employeeRepository.save(newEmployee);
+    @Transactional
+    ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
+    	Employee employee = newEmployee.converterToEntity();
+        employeeRepository.save(employee);
+        
+        URI uri = uriBuilder.path("/api/employees/{id}").buildAndExpand(employee.getId()).toUri();
+        return ResponseEntity.created(uri).body(new EmployeeDTO(employee));
     }
 
     @PutMapping("/{id}")
-    Employee replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) {
-
-        return employeeRepository.findById(id)
-                .map(employee -> {
-                    employee.setName(newEmployee.getName());
-                    return employeeRepository.save(employee);
-                })
-                .orElseGet(() -> {
-                    newEmployee.setId(id);
-                    return employeeRepository.save(newEmployee);
-                });
+    @Transactional
+    ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
+    	Optional<Employee> employeeData = employeeRepository.findById(id);
+    	if(employeeData.isPresent()) {
+    		Employee employee = employeeDto.update(id, employeeRepository);
+    		return ResponseEntity.ok(new EmployeeDTO(employee));    		
+    	}
+    	
+    	return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    void deleteEmployee(@PathVariable Long id) {
-        employeeRepository.deleteById(id);
+    @Transactional
+    ResponseEntity<?> delete(@PathVariable Long id) {
+    	Optional<Employee> employee = employeeRepository.findById(id);
+    	if (employee.isPresent()) {
+    		employeeRepository.deleteById(id);
+    		return ResponseEntity.ok().build();
+    	}
+    	
+        return ResponseEntity.notFound().build();
     }
 
 }
