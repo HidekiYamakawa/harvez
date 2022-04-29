@@ -38,26 +38,32 @@ public class User implements UserDetails {
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.profiles;
 	}
+	
 	@Override
 	public String getPassword() {
 		return this.password;
 	}
+	
 	@Override
 	public String getUsername() {
 		return this.name;
 	}
+	
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;
 	}
+	
 	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
+	
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
 	}
+	
 	@Override
 	public boolean isEnabled() {
 		return true;
