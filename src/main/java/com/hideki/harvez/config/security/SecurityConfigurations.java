@@ -11,6 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.hideki.harvez.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -20,6 +23,8 @@ import lombok.AllArgsConstructor;
 public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 
 	private final AuthenticationService authenticationService;
+	private final TokenService tokenService;
+	private final UserRepository userRepository;
 	
 	@Override
 	@Bean
@@ -40,7 +45,8 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 		.antMatchers(HttpMethod.POST, "/api/auth").permitAll()
 		.anyRequest().authenticated()
 		.and().csrf().disable()
-		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+		.and().addFilterBefore(new TokenAuthenticationFilter(tokenService, userRepository), UsernamePasswordAuthenticationFilter.class);
 	}
 	
 	@Override
