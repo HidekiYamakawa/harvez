@@ -40,7 +40,7 @@ public class EmployeeController {
 
 	@GetMapping
 	@Cacheable(value = "employeeList")
-	Page<EmployeeNamesDTO> list(@RequestParam(required = false) String pieceOfName, 
+	public Page<EmployeeNamesDTO> list(@RequestParam(required = false) String pieceOfName, 
 			@PageableDefault(page = 0, size = 10) Pageable pagination) {
 
 		Page<Employee> employees;
@@ -54,7 +54,7 @@ public class EmployeeController {
 	}
 
 	@GetMapping("/{id}")
-	ResponseEntity<EmployeeDetailsDTO> detail(@PathVariable Long id) {
+	public ResponseEntity<EmployeeDetailsDTO> detail(@PathVariable Long id) {
 		Optional<Employee> employeeData = employeeRepository.findById(id);
 		if (employeeData.isPresent()) {
 			return ResponseEntity.ok(new EmployeeDetailsDTO(employeeData.get()));
@@ -66,7 +66,7 @@ public class EmployeeController {
 	@PostMapping
 	@Transactional
 	@CacheEvict(value = "employeeList", allEntries = true)
-	ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<EmployeeDTO> create(@RequestBody @Valid EmployeeDTO newEmployee, UriComponentsBuilder uriBuilder) {
 		Employee employee = newEmployee.converterToEntity();
 		employeeRepository.save(employee);
 
@@ -77,7 +77,7 @@ public class EmployeeController {
 	@PutMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "employeeList", allEntries = true)
-	ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
+	public ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody @Valid EmployeeDTO employeeDto) {
 		Optional<Employee> employeeData = employeeRepository.findById(id);
 		if (employeeData.isPresent()) {
 			Employee employee = employeeDto.update(id, employeeRepository);
@@ -90,7 +90,7 @@ public class EmployeeController {
 	@DeleteMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "employeeList", allEntries = true)
-	ResponseEntity<?> delete(@PathVariable Long id) {
+	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Optional<Employee> employee = employeeRepository.findById(id);
 		if (employee.isPresent()) {
 			employeeRepository.deleteById(id);
