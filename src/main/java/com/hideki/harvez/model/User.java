@@ -32,11 +32,11 @@ public class User implements UserDetails {
 	private String password;
 	
 	@ManyToMany(fetch = FetchType.EAGER)
-	private List<Profile> profiles = new ArrayList<>();
+	private List<Role> roles = new ArrayList<>();
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return this.profiles;
+		return this.roles;
 	}
 	
 	@Override

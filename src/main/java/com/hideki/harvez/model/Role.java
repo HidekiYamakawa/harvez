@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Profile implements GrantedAuthority {
+public class Role implements GrantedAuthority {
 
 	private static final long serialVersionUID = 1L;
 
