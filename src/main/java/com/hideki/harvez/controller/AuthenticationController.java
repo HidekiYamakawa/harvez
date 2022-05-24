@@ -2,6 +2,7 @@ package com.hideki.harvez.controller;
 
 import javax.validation.Valid;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("api/auth")
+@Profile(value = {"prod", "test"})
 @AllArgsConstructor
 public class AuthenticationController {
 
