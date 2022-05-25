@@ -25,7 +25,7 @@ public class EmployeeRepositoryTest {
 	
 	@Test
 	public void shouldLoadAnEmployeeByName() {
-		String employeeName = "Carlos Hideki Yamakawa";
+		String employeeName = "Maria Eduarda Pereira";
 		Employee employee = repository.findFirstByName(employeeName);
 		assertNotNull(employee);
 		assertEquals(employeeName, employee.getName());
